@@ -5,7 +5,7 @@ from rasterio.mask import mask
 import tempfile, os, io, zipfile
 
 st.set_page_config(page_title="Raster Clipper", layout="wide")
-st.title("🌍 Raster Clipper Web App")
+st.title("🌍 Batch Raster Clipper Web App")
 
 st.markdown("""
 Upload all shapefile components (​.shp, ​.shx, ​.dbf, ​.prj) together, then select one or more GeoTIFFs to clip.  
