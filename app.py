@@ -34,21 +34,25 @@ if st.button("▶ Clip Rasters"):
         with tempfile.TemporaryDirectory() as tmpdir:
             # a) Save shapefile components to temp
             for f in shp_upload:
-                open(os.path.join(tmpdir, f.name), "wb").write(f.getbuffer())
-            # find the .shp path
-            shp_path = next(p for p in glob := [os.path.join(tmpdir, f.name) for f in shp_upload] if p.endswith(".shp"))
+                with open(os.path.join(tmpdir, f.name), "wb") as dst:
+                    dst.write(f.getbuffer())
 
-            # b) Read shapefile and extract geometries
+            # b) Find the .shp file path
+            shapefile_paths = [os.path.join(tmpdir, f.name) for f in shp_upload]
+            shp_path = next(path for path in shapefile_paths if path.lower().endswith(".shp"))
+
+            # c) Read shapefile and extract geometries
             shapefile = gpd.read_file(shp_path).to_crs("EPSG:4326")
             geoms = [feat.__geo_interface__ for feat in shapefile.geometry]
 
-            # c) Prepare in-memory ZIP
+            # d) Prepare in-memory ZIP
             zip_buf = io.BytesIO()
             with zipfile.ZipFile(zip_buf, "w") as zipf:
                 # process each uploaded TIFF
                 for tif in tif_upload:
                     tif_path = os.path.join(tmpdir, tif.name)
-                    open(tif_path, "wb").write(tif.getbuffer())
+                    with open(tif_path, "wb") as dst:
+                        dst.write(tif.getbuffer())
 
                     with rasterio.open(tif_path) as src:
                         out_image, out_transform = mask(src, geoms, crop=True)
